@@ -51,6 +51,25 @@
     .welcome-message {
       margin-bottom: 2rem;
     }
+    .welcome-message h2 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.4rem;
+      color: #2e7d32;
+    }
+    .welcome-message p {
+      margin: 0 0 1rem 0;
+      font-size: 0.9rem;
+      color: #555;
+    }
+    .welcome-message ul {
+      margin: 0;
+      padding-left: 1rem;
+      list-style: none;
+    }
+    .welcome-message li {
+      margin-bottom: 0.25rem;
+      font-weight: 500;
+    }
     .gauges-section {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -191,16 +210,20 @@
   <div class="container">
     <main class="main-content">
       <div class="welcome-message">
-        <p>
-          Welcome to your modern dashboard. This is the main area where you can add
-          widgets, charts, or other content.
-        </p>
+        <h2>Gauge Color Legend</h2>
+        <p>According to CDRRMO Heat Indices Thresholds:</p>
+        <ul>
+          <li><span style="color: #4caf50;">Green:</span> Caution (27-32°C) - Low risk</li>
+          <li><span style="color: #ff9800;">Yellow:</span> Extreme Caution (33-41°C) - Higher risk</li>
+          <li><span style="color: #ff5722;">Orange:</span> Danger (42-51°C) - Likely heat issues</li>
+          <li><span style="color: #f44336;">Red:</span> Extreme Danger (52°C+) - High risk of heat stroke</li>
+        </ul>
       </div>
       <section class="gauges-section">
         <div class="gauge" id="temperature-gauge">
           <svg viewBox="0 0 160 160">
             <circle cx="80" cy="80" r="60" class="background" />
-            <circle cx="80" cy="80" r="60" class="progress" stroke-dasharray="0 376.99" />
+            <circle cx="80" cy="80" r="60" class="progress" stroke-dasharray="0 376.99" transform="rotate(90 80 80)" />
           </svg>
           <div class="gauge-text">0.0 °C</div>
           <div class="gauge-label">Temperature</div>
@@ -208,7 +231,7 @@
         <div class="gauge" id="humidity-gauge">
           <svg viewBox="0 0 160 160">
             <circle cx="80" cy="80" r="60" class="background" />
-            <circle cx="80" cy="80" r="60" class="progress" stroke-dasharray="0 376.99" />
+            <circle cx="80" cy="80" r="60" class="progress" stroke-dasharray="0 376.99" transform="rotate(90 80 80)" />
           </svg>
           <div class="gauge-text">0.0 %</div>
           <div class="gauge-label">Humidity</div>
@@ -216,7 +239,7 @@
         <div class="gauge" id="nn-risk-gauge">
           <svg viewBox="0 0 160 160">
             <circle cx="80" cy="80" r="60" class="background" />
-            <circle cx="80" cy="80" r="60" class="progress" stroke-dasharray="0 376.99" />
+            <circle cx="80" cy="80" r="60" class="progress" stroke-dasharray="0 376.99" transform="rotate(90 80 80)" />
           </svg>
           <div class="gauge-text">0.0</div>
           <div class="gauge-label">Neural Network Risk</div>
@@ -233,87 +256,43 @@
   </div>
 
   <script>
-    // Weather functions
-    function getWeatherEmoji(code) {
-      const emojis = {
-        0: "☀️",
-        1: "🌤️",
-        2: "⛅",
-        3: "☁️",
-        45: "🌫️",
-        48: "🌫️",
-        51: "🌦️",
-        53: "🌦️",
-        55: "🌦️",
-        56: "🌨️",
-        57: "🌨️",
-        61: "🌧️",
-        63: "🌧️",
-        65: "🌧️",
-        66: "🌨️",
-        67: "🌨️",
-        71: "❄️",
-        73: "❄️",
-        75: "❄️",
-        77: "❄️",
-        80: "🌧️",
-        81: "🌧️",
-        82: "🌧️",
-        85: "❄️",
-        86: "❄️",
-        95: "⛈️",
-        96: "⛈️",
-        99: "⛈️",
-      };
-      return emojis[code] || "❓";
-    }
-
-    const weatherDescriptionMap = {
-      0: "Clear sky",
-      1: "Mainly clear",
-      2: "Partly cloudy",
-      3: "Overcast",
-      45: "Fog",
-      48: "Depositing rime fog",
-      51: "Light drizzle",
-      53: "Moderate drizzle",
-      55: "Dense drizzle",
-      56: "Light freezing drizzle",
-      57: "Dense freezing drizzle",
-      61: "Slight rain",
-      63: "Moderate rain",
-      65: "Heavy rain",
-      66: "Light freezing rain",
-      67: "Heavy freezing rain",
-      71: "Slight snowfall",
-      73: "Moderate snowfall",
-      75: "Heavy snowfall",
-      77: "Snow grains",
-      80: "Slight rain showers",
-      81: "Moderate rain showers",
-      82: "Violent rain showers",
-      85: "Slight snow showers",
-      86: "Heavy snow showers",
-      95: "Thunderstorm",
-      96: "Thunderstorm with slight hail",
-      99: "Thunderstorm with heavy hail",
+    // Weather emoji and description maps
+    const weatherEmojis = {
+      0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️", 45: "🌫️", 48: "🌫️",
+      51: "🌦️", 53: "🌦️", 55: "🌦️", 56: "🌨️", 57: "🌨️",
+      61: "🌧️", 63: "🌧️", 65: "🌧️", 66: "🌨️", 67: "🌨️",
+      71: "❄️", 73: "❄️", 75: "❄️", 77: "❄️", 80: "🌧️",
+      81: "🌧️", 82: "🌧️", 85: "❄️", 86: "❄️", 95: "⛈️",
+      96: "⛈️", 99: "⛈️"
     };
 
+    const weatherDescriptions = {
+      0: "Clear sky", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
+      45: "Fog", 48: "Depositing rime fog", 51: "Light drizzle", 53: "Moderate drizzle",
+      55: "Dense drizzle", 56: "Light freezing drizzle", 57: "Dense freezing drizzle",
+      61: "Slight rain", 63: "Moderate rain", 65: "Heavy rain", 66: "Light freezing rain",
+      67: "Heavy freezing rain", 71: "Slight snowfall", 73: "Moderate snowfall",
+      75: "Heavy snowfall", 77: "Snow grains", 80: "Slight rain showers",
+      81: "Moderate rain showers", 82: "Violent rain showers", 85: "Slight snow showers",
+      86: "Heavy snow showers", 95: "Thunderstorm", 96: "Thunderstorm with slight hail",
+      99: "Thunderstorm with heavy hail"
+    };
+
+    // Utility function to convert m/s to kph
     function msToKph(ms) {
       return (ms * 3.6).toFixed(1);
     }
 
+    // Fetch weather data from API
     async function fetchWeather(lat, lon) {
       const locationElem = document.getElementById("location");
       const infoElem = document.getElementById("weather-info");
       locationElem.textContent = "Fetching weather for your location...";
 
       try {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
-          `&current_weather=true&hourly=relative_humidity_2m&timezone=auto`;
-        
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relative_humidity_2m&timezone=auto`;
         const response = await fetch(url);
-        if (!response.ok) throw new Error("Failed fetching weather");
+        if (!response.ok) throw new Error("Failed to fetch weather");
 
         const data = await response.json();
         const current = data.current_weather;
@@ -326,41 +305,30 @@
           if (idx !== -1) humidity = hourlyHum[idx];
         }
 
+        // Reverse geocode location
         let locationName = `Lat: ${lat.toFixed(3)}, Lon: ${lon.toFixed(3)}`;
         try {
-          const geoResp = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
-          { headers: { "User-Agent": "YourAppName/1.0" } }
-        );
-        const geoData = await geoResp.json();
-        if (geoData.address) {
-          const addr = geoData.address;
-          
-          const possibleNames = [
-            addr.city,
-            addr.town,
-            addr.municipality,
-            addr.village,
-            addr.suburb,
-            addr.city_district,
-            addr.county,
-            addr.state,
-            addr.region,
-          ];
-          
-          const bestMatch = possibleNames.find(x => x);
-          if (bestMatch) {
-            locationName = bestMatch;
-            if (addr.country) locationName += ", " + addr.country;
+          const geoResp = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`, {
+            headers: { "User-Agent": "YourAppName/1.0" }
+          });
+          const geoData = await geoResp.json();
+          if (geoData.address) {
+            const addr = geoData.address;
+            const possibleNames = [addr.city, addr.town, addr.municipality, addr.village, addr.suburb, addr.city_district, addr.county, addr.state, addr.region];
+            const bestMatch = possibleNames.find(x => x);
+            if (bestMatch) {
+              locationName = bestMatch;
+              if (addr.country) locationName += ", " + addr.country;
+            }
           }
+        } catch (err) {
+          console.warn("Reverse geocoding failed:", err);
         }
-      } catch (err) {
-        console.warn("Reverse geocoding failed", err);
-      }
 
         locationElem.textContent = `Weather in ${locationName}`;
 
-        const emoji = getWeatherEmoji(current.weathercode);
-        const description = weatherDescriptionMap[current.weathercode] || "Unknown weather";
+        const emoji = weatherEmojis[current.weathercode] || "❓";
+        const description = weatherDescriptions[current.weathercode] || "Unknown weather";
 
         infoElem.innerHTML = `
           <div class="weather-row">
@@ -383,20 +351,16 @@
       } catch (error) {
         locationElem.textContent = "Weather information unavailable";
         infoElem.textContent = "Error fetching weather data.";
-        console.error(error);
+        console.error("Weather fetch error:", error);
       }
     }
 
+    // Auto-detect location and fetch weather
     function autoDetectLocation() {
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            const { latitude, longitude } = pos.coords;
-            fetchWeather(latitude, longitude);
-          },
-          () => {
-            fetchWeather(14.2786, 121.1244);
-          },
+          (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude),
+          () => fetchWeather(14.2786, 121.1244), // Default to Cabuyao City
           { enableHighAccuracy: false, timeout: 5000 }
         );
       } else {
@@ -404,7 +368,39 @@
       }
     }
 
-    window.addEventListener("DOMContentLoaded", autoDetectLocation);
+    // Update gauge function (reusable)
+    async function updateGauge(endpoint, gaugeId, unit, maxValue) {
+      try {
+        const response = await fetch(`http://127.0.0.1:5000/${endpoint}`);
+        const data = await response.json();
+        const value = data[endpoint];
+
+        const gaugeText = document.querySelector(`#${gaugeId} .gauge-text`);
+        gaugeText.textContent = `${value.toFixed(1)} ${unit}`;
+
+        const circle = document.querySelector(`#${gaugeId} .progress`);
+        const radius = circle.r.baseVal.value;
+        const circumference = 2 * Math.PI * radius;
+        const percent = value / maxValue;
+        circle.setAttribute("stroke-dasharray", `${percent * circumference} ${circumference}`);
+      } catch (err) {
+        console.error(`Error fetching ${endpoint}:`, err);
+      }
+    }
+
+    // Update gauges periodically
+    function updateGauges() {
+      updateGauge("temperature", "temperature-gauge", "°C", 100);
+      updateGauge("humidity", "humidity-gauge", "%", 100);
+      // Add NN risk if endpoint exists: updateGauge("nn_risk", "nn-risk-gauge", "", 1);
+    }
+
+    // Initialize on page load
+    window.addEventListener("DOMContentLoaded", () => {
+      autoDetectLocation();
+      updateGauges();
+      setInterval(updateGauges, 500);
+    });
   </script>
 </body>
 </html>
