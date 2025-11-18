@@ -100,7 +100,7 @@
       stroke: #e0e0e0;
     }
     .gauge .progress {
-      stroke: #4caf50;
+      stroke: #2196f3;
       stroke-linecap: round;
       transition: stroke-dasharray 0.5s ease;
     }
@@ -111,14 +111,14 @@
       transform: translate(-50%, -50%);
       font-weight: 700;
       font-size: 1.2rem;
-      color: #2e7d32;
+      color: #2196f3;
       text-align: center;
     }
     .gauge-label {
       margin-top: 0.5rem;
       font-weight: 600;
       font-size: 1rem;
-      color: #558b2f;
+      color: #2196f3;
     }
     .weather-panel {
       width: 320px;
@@ -368,12 +368,37 @@
       }
     }
 
+    //Function to determine gauge color based on value and type
+    function getGaugeColor(value, type) {
+      if (type === 'temperature') {
+      if (value >= 52) return '#f44336';   // Extreme Danger
+      if (value >= 42) return '#ff5722';   // Danger
+      if (value >= 33) return '#ff9800';   // Extreme Caution
+      if (value >= 27) return '#4caf50';   // Caution
+      return '#2196f3';                    // Below 27°C (Optional: blue)
+    } else if (type === 'humidity') {
+      if (value > 80) return '#f44336';
+      if (value > 60) return '#ff9800';
+      return '#4caf50';
+    } else if (type === 'nn_risk') {
+      const percent = value * 100;
+      if (percent > 80) return '#f44336';
+      if (percent > 60) return '#ff9800';
+      return '#4caf50';
+    }
+    return '#4caf50';
+  }
+
     // Update gauge function (reusable)
-    async function updateGauge(endpoint, gaugeId, unit, maxValue) {
+    async function updateGauge(endpoint, gaugeId, unit, maxValue, type) {
       try {
-        const response = await fetch(`http://127.0.0.1:5000/${endpoint}`);
-        const data = await response.json();
-        const value = data[endpoint];
+        const resp = await fetch(`http://127.0.0.1:5000/${endpoint}`);
+        const data = await resp.json();
+
+        // --- extract the real number ---
+        let value = data[endpoint];
+        if (typeof value === 'object') value = value[endpoint]; // unwrap {"temperature":30.2}
+        // ---------------------------------
 
         const gaugeText = document.querySelector(`#${gaugeId} .gauge-text`);
         gaugeText.textContent = `${value.toFixed(1)} ${unit}`;
@@ -381,17 +406,19 @@
         const circle = document.querySelector(`#${gaugeId} .progress`);
         const radius = circle.r.baseVal.value;
         const circumference = 2 * Math.PI * radius;
-        const percent = value / maxValue;
-        circle.setAttribute("stroke-dasharray", `${percent * circumference} ${circumference}`);
-      } catch (err) {
-        console.error(`Error fetching ${endpoint}:`, err);
+        const percent = Math.min(value / maxValue, 1);
+        circle.style.strokeDasharray = `${percent * circumference} ${circumference}`;
+
+        const color = getGaugeColor(value, type);
+        circle.style.stroke = color;
+      } catch (e) {
+        console.error(`Error updating ${gaugeId}:`, e);
       }
     }
-
     // Update gauges periodically
     function updateGauges() {
-      updateGauge("temperature", "temperature-gauge", "°C", 100);
-      updateGauge("humidity", "humidity-gauge", "%", 100);
+      updateGauge("temperature", "temperature-gauge", "°C", 100, "temperature");
+      updateGauge("humidity", "humidity-gauge", "%", 100, "humidity");
       // Add NN risk if endpoint exists: updateGauge("nn_risk", "nn-risk-gauge", "", 1);
     }
 
