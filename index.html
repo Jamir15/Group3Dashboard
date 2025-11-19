@@ -1,263 +1,235 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Dashboard (Decision Support System)</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
-    rel="stylesheet"
-  />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard – Decision Support System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
+    /* ----------  DESIGN TOKENS  ---------- */
+    :root {
+      --clr-bg: #f4f7f6;
+      --clr-header: #2e7d32;
+      --clr-card: #ffffff;
+      --clr-text: #333333;
+      --clr-primary: #2196f3;
+      --gauge-radius: 60;
+      --gauge-stroke: 15;
+      --gap: 1.5rem;
+      --radius: 12px;
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, .1);
+      --shadow-md: 0 8px 16px rgba(0, 0, 0, .1);
+      --shadow-lg: 0 12px 30px rgba(46, 125, 50, .3);
     }
+
+    /* ----------  RESET  ---------- */
+    *, *::before, *::after { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: "Roboto", sans-serif;
-      background-color: #f4f7f6;
-      color: #333;
+      background: var(--clr-bg);
+      color: var(--clr-text);
       height: 100vh;
       display: flex;
       flex-direction: column;
     }
+
+    /* ----------  LAYOUT  ---------- */
     header {
-      background-color: #2e7d32;
+      background: var(--clr-header);
       color: white;
       padding: 1rem 2rem;
       font-weight: 700;
       font-size: 1.8rem;
+      box-shadow: var(--shadow-sm);
       user-select: none;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
     .container {
       flex: 1;
       display: flex;
-      padding: 1.5rem 2rem;
-      gap: 2rem;
+      padding: var(--gap) calc(var(--gap) * 1.33);
+      gap: var(--gap);
       overflow: hidden;
     }
     .main-content {
       flex: 1;
-      background: white;
-      border-radius: 12px;
+      background: var(--clr-card);
+      border-radius: var(--radius);
       padding: 2rem 2.5rem;
-      box-shadow: 0 8px 16px rgb(0 0 0 / 0.1);
+      box-shadow: var(--shadow-md);
       overflow-y: auto;
-      font-size: 1rem;
       line-height: 1.6;
-      color: #444;
-    }
-    .welcome-message {
-      margin-bottom: 2rem;
-    }
-    .welcome-message h2 {
-      margin: 0 0 0.5rem 0;
-      font-size: 1.4rem;
-      color: #2e7d32;
-    }
-    .welcome-message p {
-      margin: 0 0 1rem 0;
-      font-size: 0.9rem;
-      color: #555;
-    }
-    .welcome-message ul {
-      margin: 0;
-      padding-left: 1rem;
-      list-style: none;
-    }
-    .welcome-message li {
-      margin-bottom: 0.25rem;
-      font-weight: 500;
-    }
-    .gauges-section {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-    .gauge {
-      position: relative;
-      width: 350px;
-      height: 160px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      padding: 1rem;
-    }
-    .gauge svg {
-      width: 100%;
-      height: 100%;
-    }
-    .gauge circle {
-      fill: none;
-      stroke-width: 15;
-    }
-    .gauge .background {
-      stroke: #e0e0e0;
-    }
-    .gauge .progress {
-      stroke: #2196f3;
-      stroke-linecap: round;
-      transition: stroke-dasharray 0.5s ease;
-    }
-    .gauge-text {
-      position: absolute;
-      top: 43%; 
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-weight: 700;
-      font-size: 1.2rem;
-      color: #2196f3;
-      text-align: center;
-    }
-    .gauge-label {
-      margin-top: 0.5rem;
-      font-weight: 600;
-      font-size: 1rem;
-      color: #2196f3;
     }
     .weather-panel {
       width: 320px;
-      background-color: white;
-      border-radius: 20px;
-      box-shadow: 0 12px 30px rgb(46 125 50 / 0.3);
+      background: var(--clr-card);
+      border-radius: calc(var(--radius) * 1.66);
+      box-shadow: var(--shadow-lg);
+      padding: 1.8rem 2rem;
       display: flex;
       flex-direction: column;
-      padding: 1.8rem 2rem;
       user-select: none;
       font-weight: 500;
-      color: #2e7d32;
+      color: var(--clr-header);
     }
+
+    /* ----------  WELCOME BLOCK  ---------- */
+    .welcome-message { margin-bottom: 2rem; }
+    .welcome-message h2 {
+      margin: 0 0 .5rem;
+      font-size: 1.4rem;
+      color: var(--clr-header);
+    }
+    .welcome-message ul {
+      list-style: none;
+      padding-left: 1rem;
+      margin: 0;
+    }
+    .welcome-message li + li { margin-top: .25rem; }
+
+    /* ----------  GAUGE GRID  ---------- */
+    .gauges-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    /* ----------  SINGLE GAUGE  ---------- */
+    .gauge {
+      position: relative;
+      width: 240px;
+      height: 240px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: var(--clr-card);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, .1);
+      padding: 1rem;
+    }
+    .gauge svg { width: 100%; height: 100%; }
+    .gauge circle {
+      fill: none;
+      stroke-width: var(--gauge-stroke);
+    }
+    .gauge__bg { stroke: #e0e0e0; }
+    .gauge__progress {
+      stroke: var(--clr-primary);
+      stroke-linecap: round;
+      transition: stroke-dasharray .5s ease;
+      transform: rotate(-90 80 80);
+    }
+    .gauge__text {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: var(--clr-primary);
+    }
+    .gauge__label {
+      margin-top: .5rem;
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--clr-primary);
+    }
+
+    /* ----------  WEATHER PANEL  ---------- */
     .weather-panel h2 {
       font-weight: 600;
       font-size: 1.3rem;
-      margin: 0 0 1.8rem 0;
-      color: #2e7d32;
+      margin: 0 0 1.8rem;
+      color: var(--clr-header);
       border-bottom: 2px solid #a5d6a7;
-      padding-bottom: 0.3rem;
-      letter-spacing: 0.03em;
+      padding-bottom: .3rem;
     }
-    .weather-info {
-      display: flex;
-      flex-direction: column;
-      gap: 1.1rem;
-      font-size: 1.1rem;
-    }
+    .weather-info { display: flex; flex-direction: column; gap: 1.1rem; font-size: 1.1rem; }
     .weather-row {
       display: flex;
       justify-content: space-between;
-      align-items: center;
       border-bottom: 1px solid #d3e4cd;
-      padding-bottom: 0.3rem;
-      line-height: 1.3;
+      padding-bottom: .3rem;
     }
-    .weather-row:last-child {
-      border-bottom: none;
-    }
-    .weather-label {
-      font-weight: 600;
-      color: #558b2f;
-    }
-    .weather-value {
-      font-weight: 700;
-      color: #2e7d32;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-    .weather-emoji {
-      font-size: 2rem;
-      user-select: none;
-    }
-    .main-content::-webkit-scrollbar {
-      width: 10px;
-    }
-    .main-content::-webkit-scrollbar-thumb {
-      background-color: #9ccc65;
-      border-radius: 8px;
-    }
+    .weather-row:last-child { border: 0; }
+    .weather-label { font-weight: 600; color: #558b2f; }
+    .weather-value { font-weight: 700; color: var(--clr-header); display: flex; align-items: center; gap: .4rem; }
+    .weather-emoji { font-size: 2rem; }
+
+    /* ----------  SCROLLBAR  ---------- */
+    .main-content::-webkit-scrollbar { width: 10px; }
+    .main-content::-webkit-scrollbar-thumb { background: #9ccc65; border-radius: 8px; }
+
+    /* ----------  RESPONSIVE  ---------- */
     @media (max-width: 800px) {
-      .container {
-        flex-direction: column;
-        padding: 1rem 1.2rem;
-      }
-      .weather-panel {
-        width: 100%;
-        margin-top: 1.8rem;
-      }
-      .main-content {
-        border-radius: 12px;
-        padding: 1.6rem 2rem;
-      }
-      .gauges-section {
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 0.8rem;
-      }
-      .gauge {
-        width: 120px;
-        height: 120px;
-      }
+      .container { flex-direction: column; padding: 1rem 1.2rem; }
+      .weather-panel { width: 100%; margin-top: 1.8rem; }
+      .gauges-section { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+      .gauge { width: 120px; height: 120px; }
     }
   </style>
 </head>
 <body>
-  <header>Dashboard (Decision Support System)</header>
+  <header>Dashboard – Decision Support System</header>
 
   <div class="container">
     <main class="main-content">
       <div class="welcome-message">
         <h2>Gauge Color Legend</h2>
-        <p>According to CDRRMO Heat Indices Thresholds:</p>
+        <p>According to CDRRMO Heat-Index Thresholds:</p>
         <ul>
-          <li><span style="color: #4caf50;">Green:</span> Caution (27-32°C) - Low risk</li>
-          <li><span style="color: #ff9800;">Yellow:</span> Extreme Caution (33-41°C) - Higher risk</li>
-          <li><span style="color: #ff5722;">Orange:</span> Danger (42-51°C) - Likely heat issues</li>
-          <li><span style="color: #f44336;">Red:</span> Extreme Danger (52°C+) - High risk of heat stroke</li>
+          <li><span style="color: #4caf50;">Green:</span> Caution (27–32 °C) – Low risk</li>
+          <li><span style="color: #ff9800;">Yellow:</span> Extreme Caution (33–41 °C) – Higher risk</li>
+          <li><span style="color: #ff5722;">Orange:</span> Danger (42–51 °C) – Likely heat issues</li>
+          <li><span style="color: #f44336;">Red:</span> Extreme Danger (≥52 °C) – High risk of heat stroke</li>
         </ul>
       </div>
+
       <section class="gauges-section">
-        <div class="gauge" id="temperature-gauge">
-          <svg viewBox="0 0 160 160">
-            <circle cx="80" cy="80" r="60" class="background" />
-            <circle cx="80" cy="80" r="60" class="progress" stroke-dasharray="0 376.99" transform="rotate(90 80 80)" />
-          </svg>
-          <div class="gauge-text">0.0°C</div>
-          <div class="gauge-label">Temperature</div>
-        </div>
-        <div class="gauge" id="humidity-gauge">
-          <svg viewBox="0 0 160 160">
-            <circle cx="80" cy="80" r="60" class="background" />
-            <circle cx="80" cy="80" r="60" class="progress" stroke-dasharray="0 376.99" transform="rotate(90 80 80)" />
-          </svg>
-          <div class="gauge-text">0.0%</div>
-          <div class="gauge-label">Humidity</div>
-        </div>
-        <div class="gauge" id="nn-risk-gauge">
-          <svg viewBox="0 0 160 160">
-            <circle cx="80" cy="80" r="60" class="background" />
-            <circle cx="80" cy="80" r="60" class="progress" stroke-dasharray="0 376.99" transform="rotate(90 80 80)" />
-          </svg>
-          <div class="gauge-text">0.0</div>
-          <div class="gauge-label">Heat Index</div>
-        </div>
+        <div class="gauge" id="temperature-gauge"></div>
+        <div class="gauge" id="humidity-gauge"></div>
+        <div class="gauge" id="heat-index-gauge"></div>
       </section>
     </main>
 
-    <section class="weather-panel" aria-label="Weather information">
-      <h2 id="location">Detecting location...</h2>
-      <div class="weather-info" id="weather-info">
-        Fetching weather data...
-      </div>
-    </section>
+    <aside class="weather-panel" aria-label="Weather information">
+      <h2 id="location">Detecting location…</h2>
+      <div class="weather-info" id="weather-info">Fetching weather data…</div>
+    </aside>
   </div>
 
+  <!-- ----------  Firebase SDK  ---------- -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
   <script>
-    // Weather emoji and description maps
-    const weatherEmojis = {
+    /* =========================  CONFIGURATION  ========================= */
+    const CONFIG = {
+      firebase: {
+        apiKey: "AIzaSyCq6MUL63iHYpOrGqoQrWCjDPWhOnNajmQ",
+        authDomain: "dss-database-51609.firebaseapp.com",
+        projectId: "dss-database-51609"
+      },
+      thresholds: {           // CDRRMO colour breaks (°C)
+        caution: 27,
+        extremeCaution: 33,
+        danger: 42,
+        extremeDanger: 52
+      },
+      gaugeLimits: {          // max scale on dial
+        temperature: 100,
+        humidity: 100,
+        heatIndex: 70
+      },
+      updateInterval: 500     // ms (Firestore delivers instantly)
+    };
+
+    /* =========================  FIREBASE INIT  ========================= */
+    firebase.initializeApp(CONFIG.firebase);
+    const db = firebase.firestore();
+
+    /* =========================  WEATHER: EMOJI & DESC  ========================= */
+    const WEATHER_EMOJIS = {
       0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️", 45: "🌫️", 48: "🌫️",
       51: "🌦️", 53: "🌦️", 55: "🌦️", 56: "🌨️", 57: "🌨️",
       61: "🌧️", 63: "🌧️", 65: "🌧️", 66: "🌨️", 67: "🌨️",
@@ -265,8 +237,7 @@
       81: "🌧️", 82: "🌧️", 85: "❄️", 86: "❄️", 95: "⛈️",
       96: "⛈️", 99: "⛈️"
     };
-
-    const weatherDescriptions = {
+    const WEATHER_DESC = {
       0: "Clear sky", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
       45: "Fog", 48: "Depositing rime fog", 51: "Light drizzle", 53: "Moderate drizzle",
       55: "Dense drizzle", 56: "Light freezing drizzle", 57: "Dense freezing drizzle",
@@ -278,62 +249,155 @@
       99: "Thunderstorm with heavy hail"
     };
 
-    // Utility function to convert m/s to kph
-    function msToKph(ms) {
-      return (ms * 3.6).toFixed(1);
+    /* =========================  HELPER: m/s → km/h  ========================= */
+    const msToKph = ms => (ms * 3.6).toFixed(1);
+
+    /* =========================  HELPER: HEAT-INDEX (°C)  ========================= */
+    /**
+     * Calculates NOAA heat-index from Celsius temperature and % relative humidity.
+     * @param {number} T  – air temperature (°C)
+     * @param {number} RH – relative humidity (%)
+     * @returns {number}  – heat-index (°C)
+     */
+    function heatIndex(T, RH) {
+      const Tf = T * 9/5 + 32;
+      const HI = -42.379
+        + 2.04901523 * Tf
+        + 10.14333127 * RH
+        - 0.22475541   * Tf * RH
+        - 6.83783e-3   * Tf * Tf
+        - 5.481717e-2  * RH * RH
+        + 1.22874e-3   * Tf * Tf * RH
+        + 8.5282e-4    * Tf * RH * RH
+        - 1.99e-6      * Tf * Tf * RH * RH;
+      return (HI - 32) * 5/9;
     }
 
-    // Fetch weather data from API
+    /* =========================  HELPER: COLOUR FOR THRESHOLD  ========================= */
+    /**
+     * Returns gauge colour according to CDRRMO heat-index thresholds.
+     * @param {number} value – temperature or heat-index (°C)
+     * @param {'temperature'|'humidity'} type – which scale to use
+     * @returns {string} – hex colour
+     */
+    function getGaugeColor(value, type) {
+      if (type === 'temperature') {
+        if (value >= CONFIG.thresholds.extremeDanger) return '#f44336';
+        if (value >= CONFIG.thresholds.danger)       return '#ff5722';
+        if (value >= CONFIG.thresholds.extremeCaution) return '#ff9800';
+        if (value >= CONFIG.thresholds.caution)      return '#4caf50';
+        return '#2196f3';
+      }
+      if (type === 'humidity') {
+        if (value > 80) return '#f44336';
+        if (value > 60) return '#ff9800';
+        return '#4caf50';
+      }
+      return '#4caf50';
+    }
+
+    /* =========================  GAUGE: CREATE / UPDATE  ========================= */
+    /**
+     * Draws or updates a single SVG gauge.
+     * @param {string} id        – element id (without #)
+     * @param {number} value     – current reading
+     * @param {number} max       – scale maximum
+     * @param {string} unit      – °C, %, etc.
+     * @param {'temperature'|'humidity'} colorType – which colour scale
+     */
+    function updateGauge(id, value, max, unit, colorType) {
+      const wrap     = document.getElementById(id);
+      const radius   = 60;
+      const circ     = 2 * Math.PI * radius;
+      const pct      = Math.min(value / max, 1);
+
+      /* first run – create SVG */
+      if (!wrap.querySelector('svg')) {
+        wrap.innerHTML = `
+          <svg viewBox="0 0 160 160">
+            <circle cx="80" cy="80" r="${radius}" stroke="#e0e0e0" stroke-width="15" fill="none" class="gauge__bg"/>
+            <circle cx="80" cy="80" r="${radius}" stroke-width="15" fill="none" stroke-linecap="round"
+                    class="gauge__progress" transform="rotate(-90 80 80)"/>
+          </svg>
+          <div class="gauge__text"></div>
+          <div class="gauge__label">${id.replace('-gauge','').replace('-',' ').toUpperCase()}</div>`;
+      }
+
+      /* update */
+      const progress = wrap.querySelector('.gauge__progress');
+      progress.style.strokeDasharray = `${pct * circ} ${circ}`;
+      progress.style.stroke          = getGaugeColor(value, colorType);
+
+      wrap.querySelector('.gauge__text').textContent = `${value.toFixed(1)}${unit}`;
+    }
+
+    /* =========================  FIRESTORE: REAL-TIME GAUGES  ========================= */
+    /**
+     * Attaches a Firestore listener to the newest document in 'readings'
+     * and refreshes the three gauges instantly.
+     */
+    function listenToReadings() {
+      db.collection('readings')
+        .orderBy('ts','desc')
+        .limit(1)
+        .onSnapshot(snap => {
+          if (snap.empty) return;
+          const d = snap.docs[0].data();
+          const t  = d.temperature;
+          const h  = d.humidity;
+          const hi = heatIndex(t, h);
+
+          updateGauge('temperature-gauge', t,  CONFIG.gaugeLimits.temperature, '°C', 'temperature');
+          updateGauge('humidity-gauge',    h,  CONFIG.gaugeLimits.humidity,    '%',  'humidity');
+          updateGauge('heat-index-gauge',  hi, CONFIG.gaugeLimits.heatIndex,   '°C', 'temperature');
+        }, err => console.error('Firestore listener failed:', err));
+    }
+
+    /* =========================  WEATHER PANEL  ========================= */
+    /**
+     * Fetches current weather + humidity from Open-Meteo and city name from
+     * Nominatim, then populates the right-hand weather card.
+     * @param {number} lat – latitude
+     * @param {number} lon – longitude
+     */
     async function fetchWeather(lat, lon) {
-      const locationElem = document.getElementById("location");
-      const infoElem = document.getElementById("weather-info");
-      locationElem.textContent = "Fetching weather for your location...";
+      const locationElem = document.getElementById('location');
+      const infoElem     = document.getElementById('weather-info');
+      locationElem.textContent = 'Fetching weather for your location…';
 
       try {
+        // 1.  Weather data
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relative_humidity_2m&timezone=auto`;
-        const response = await fetch(url);
-        if (!response.ok) throw new Error("Failed to fetch weather");
-
-        const data = await response.json();
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(res.status);
+        const data = await res.json();
         const current = data.current_weather;
         const hourlyHum = data.hourly.relative_humidity_2m;
         const hourlyTime = data.hourly.time;
+        const humIdx = hourlyTime.indexOf(current.time);
+        const humidity = humIdx !== -1 ? hourlyHum[humIdx] : null;
 
-        let humidity = null;
-        if (hourlyHum && hourlyTime) {
-          const idx = hourlyTime.indexOf(current.time);
-          if (idx !== -1) humidity = hourlyHum[idx];
-        }
-
-        // Reverse geocode location
-        let locationName = `Lat: ${lat.toFixed(3)}, Lon: ${lon.toFixed(3)}`;
+        // 2.  City name
+        let city = `Lat ${lat.toFixed(3)}, Lon ${lon.toFixed(3)}`;
         try {
-          const geoResp = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`, {
-            headers: { "User-Agent": "YourAppName/1.0" }
+          const geo = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`, {
+            headers: { 'User-Agent': 'DSS-Dashboard/1.0' }
           });
-          const geoData = await geoResp.json();
-          if (geoData.address) {
-            const addr = geoData.address;
-            const possibleNames = [addr.city, addr.town, addr.municipality, addr.village, addr.suburb, addr.city_district, addr.county, addr.state, addr.region];
-            const bestMatch = possibleNames.find(x => x);
-            if (bestMatch) {
-              locationName = bestMatch;
-              if (addr.country) locationName += ", " + addr.country;
-            }
-          }
-        } catch (err) {
-          console.warn("Reverse geocoding failed:", err);
-        }
+          const g = await geo.json();
+          const a = g.address;
+          const name = [a.city, a.town, a.municipality, a.village].find(Boolean);
+          if (name) city = `${name}${a.country ? ', ' + a.country : ''}`;
+        } catch (e) { /* ignore */ }
 
-        locationElem.textContent = `Weather in ${locationName}`;
-
-        const emoji = weatherEmojis[current.weathercode] || "❓";
-        const description = weatherDescriptions[current.weathercode] || "Unknown weather";
+        // 3.  Render
+        locationElem.textContent = `Weather in ${city}`;
+        const emoji = WEATHER_EMOJIS[current.weathercode] || '❓';
+        const desc  = WEATHER_DESC[current.weathercode]  || 'Unknown weather';
 
         infoElem.innerHTML = `
           <div class="weather-row">
             <span class="weather-label">Temperature</span>
-            <span class="weather-value">${current.temperature}°C</span>
+            <span class="weather-value">${current.temperature} °C</span>
           </div>
           <div class="weather-row">
             <span class="weather-label">Windspeed</span>
@@ -341,99 +405,36 @@
           </div>
           <div class="weather-row">
             <span class="weather-label">Humidity</span>
-            <span class="weather-value">${humidity !== null ? humidity + "%" : "N/A"}</span>
+            <span class="weather-value">${humidity !== null ? humidity + '%' : 'N/A'}</span>
           </div>
           <div class="weather-row">
             <span class="weather-label">Weather</span>
-            <span class="weather-value">${description} <span class="weather-emoji" aria-label="${description}">${emoji}</span></span>
-          </div>
-        `;
-      } catch (error) {
-        locationElem.textContent = "Weather information unavailable";
-        infoElem.textContent = "Error fetching weather data.";
-        console.error("Weather fetch error:", error);
+            <span class="weather-value">${desc} <span class="weather-emoji" aria-label="${desc}">${emoji}</span></span>
+          </div>`;
+      } catch (err) {
+        locationElem.textContent = 'Weather unavailable';
+        infoElem.textContent = 'Error loading weather data.';
+        console.warn('Weather fetch failed:', err);
       }
     }
 
-    // Auto-detect location and fetch weather
+    /**
+     * Browser geo-location wrapper; falls back to Cabuyao City.
+     */
     function autoDetectLocation() {
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude),
-          () => fetchWeather(14.2786, 121.1244), // Default to Cabuyao City
-          { enableHighAccuracy: false, timeout: 5000 }
-        );
-      } else {
-        fetchWeather(14.2786, 121.1244);
-      }
+      if (!navigator.geolocation) return fetchWeather(14.2786, 121.1244);
+      navigator.geolocation.getCurrentPosition(
+        pos => fetchWeather(pos.coords.latitude, pos.coords.longitude),
+        () => fetchWeather(14.2786, 121.1244),
+        { enableHighAccuracy: false, timeout: 5000 }
+      );
     }
 
-    //Function to determine gauge color based on value and type
-    function getGaugeColor(value, type) {
-      if (type === 'temperature') {
-      if (value >= 52) return '#f44336';   // Extreme Danger
-      if (value >= 42) return '#ff5722';   // Danger
-      if (value >= 33) return '#ff9800';   // Extreme Caution
-      if (value >= 27) return '#4caf50';   // Caution
-      return '#2196f3';                    // Below 27°C (Optional: blue)
-
-    //Do the same for humidity
-    } else if (type === 'humidity') {
-      if (value >= 52) return '#f44336';
-      if (value >= 42) return '#ff5722';  //Same color
-      if (value >= 33) return '#f9800';
-      if (value >= 27) return '#4caf50';
-      return '#2196f3';
-
-    } else if (type === 'nn_risk') {
-      const percent = value * 100;
-      if (percent > 80) return '#f44336';
-      if (percent > 60) return '#ff9800';
-      return '#4caf50';
-    }
-    return '#4caf50';
-  }
-
-    // Update gauge function (reusable)
-    async function updateGauge(endpoint, gaugeId, unit, maxValue, type) {
-      try {
-        const resp = await fetch(`http://127.0.0.1:5000/${endpoint}`);
-        const data = await resp.json();
-
-        // --- extract the real number ---
-        let value = data[endpoint];
-        if (typeof value === 'object') value = value[endpoint]; // unwrap {"temperature":30.2}
-        // ---------------------------------
-
-        const gaugeText = document.querySelector(`#${gaugeId} .gauge-text`);
-        gaugeText.textContent = `${value.toFixed(1)} ${unit}`;
-
-        const circle = document.querySelector(`#${gaugeId} .progress`);
-        const radius = circle.r.baseVal.value;
-        const circumference = 2 * Math.PI * radius;
-        const percent = Math.min(value / maxValue, 1);
-        circle.style.strokeDasharray = `${percent * circumference} ${circumference}`;
-
-        const color = getGaugeColor(value, type);
-        circle.style.stroke = color;
-      } catch (e) {
-        console.error(`Error updating ${gaugeId}:`, e);
-      }
-    }
-    // Update gauges periodically
-    function updateGauges() {
-      updateGauge("temperature", "temperature-gauge", "°C", 100, "temperature");
-      updateGauge("humidity", "humidity-gauge", "%", 100, "humidity");
-      // Add NN risk if endpoint exists: updateGauge("nn_risk", "nn-risk-gauge", "", 1);
-    }
-
-    // Initialize on page load
-    window.addEventListener("DOMContentLoaded", () => {
-      autoDetectLocation();
-      updateGauges();
-      setInterval(updateGauges, 500);
+    /* =========================  BOOTSTRAP  ========================= */
+    window.addEventListener('DOMContentLoaded', () => {
+      autoDetectLocation();   // weather panel
+      listenToReadings();     // real-time gauges
     });
   </script>
 </body>
 </html>
-
