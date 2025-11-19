@@ -289,8 +289,10 @@
         return '#2196f3';
       }
       if (type === 'humidity') {
-        if (value > 80) return '#f44336';
-        if (value > 60) return '#ff9800';
+        if (value >= CONFIG.thresholds.extremeDanger) return '#f44336';
+        if (value >= CONFIG.thresholds.danger)       return '#ff5722';
+        if (value >= CONFIG.thresholds.extremeCaution) return '#ff9800';
+        if (value >= CONFIG.thresholds.caution)      return '#4caf50';
         return '#4caf50';
       }
       return '#4caf50';
@@ -438,3 +440,4 @@
   </script>
 </body>
 </html>
+
