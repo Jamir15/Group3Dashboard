@@ -2,442 +2,197 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Dashboard – Decision Support System</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GLB Viewer</title>
+  <meta name="description" content="Simple Three.js GLB viewer with live status indicators.">
+
+  <!-- Google font + reset -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    /* ----------  DESIGN TOKENS  ---------- */
-    :root {
-      --clr-bg: #f4f7f6;
-      --clr-header: #2e7d32;
-      --clr-card: #ffffff;
-      --clr-text: #333333;
-      --clr-primary: #2196f3;
-      --gauge-radius: 60;
-      --gauge-stroke: 15;
-      --gap: 1.5rem;
-      --radius: 12px;
-      --shadow-sm: 0 2px 4px rgba(0, 0, 0, .1);
-      --shadow-md: 0 8px 16px rgba(0, 0, 0, .1);
-      --shadow-lg: 0 12px 30px rgba(46, 125, 50, .3);
-    }
-
-    /* ----------  RESET  ---------- */
-    *, *::before, *::after { box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      margin: 0;
-      font-family: "Roboto", sans-serif;
-      background: var(--clr-bg);
-      color: var(--clr-text);
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+      background: #f5f7fa;
+      color: #111;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
-    /* ----------  LAYOUT  ---------- */
-    header {
-      background: var(--clr-header);
-      color: white;
-      padding: 1rem 2rem;
-      font-weight: 700;
-      font-size: 1.8rem;
-      box-shadow: var(--shadow-sm);
-      user-select: none;
+    /* Header */
+    .top-header {
+      background: #28a745;
+      color: #fff;
+      padding: 0.6rem 0.75rem;
     }
-    .container {
-      flex: 1;
-      display: flex;
-      padding: var(--gap) calc(var(--gap) * 1.33);
-      gap: var(--gap);
-      overflow: hidden;
-    }
-    .main-content {
-      flex: 1;
-      background: var(--clr-card);
-      border-radius: var(--radius);
-      padding: 2rem 2.5rem;
-      box-shadow: var(--shadow-md);
-      overflow-y: auto;
-      line-height: 1.6;
-    }
-    .weather-panel {
-      width: 320px;
-      background: var(--clr-card);
-      border-radius: calc(var(--radius) * 1.66);
-      box-shadow: var(--shadow-lg);
-      padding: 1.8rem 2rem;
-      display: flex;
-      flex-direction: column;
-      user-select: none;
-      font-weight: 500;
-      color: var(--clr-header);
+    .top-header h1 { font-size: 1.35rem; font-weight: 600; }
+
+    /* Viewer card */
+    .viewer-wrapper { display: flex; justify-content: center; padding: 2rem 1rem; }
+    .viewer-card {
+      width: 100%; max-width: 900px; background: #fff; border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08); overflow: hidden;
     }
 
-    /* ----------  WELCOME BLOCK  ---------- */
-    .welcome-message { margin-bottom: 2rem; }
-    .welcome-message h2 {
-      margin: 0 0 .5rem;
-      font-size: 1.4rem;
-      color: var(--clr-header);
-    }
-    .welcome-message ul {
-      list-style: none;
-      padding-left: 1rem;
-      margin: 0;
-    }
-    .welcome-message li + li { margin-top: .25rem; }
+    #canvas-container { width: 100%; aspect-ratio: 16/9; position: relative; background: #eef2f6; }
+    canvas { display: block; width: 100%; height: 100%; }
 
-    /* ----------  GAUGE GRID  ---------- */
-    .gauges-section {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
+    /* Status bar below the canvas */
+    .status-bar { display: flex; gap: 1rem; align-items: center; padding: 0.75rem 1rem; font-size: 0.95rem; color: #333; }
+    .status-item { display: flex; gap: 0.5rem; align-items: baseline; }
+    .status-label { opacity: 0.7; font-size: 0.85rem; }
+    .status-value { font-weight: 600; }
 
-    /* ----------  SINGLE GAUGE  ---------- */
-    .gauge {
-      position: relative;
-      width: 240px;
-      height: 240px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background: var(--clr-card);
-      border-radius: var(--radius);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, .1);
-      padding: 1rem;
-    }
-    .gauge svg { width: 100%; height: 100%; }
-    .gauge circle {
-      fill: none;
-      stroke-width: var(--gauge-stroke);
-    }
-    .gauge__bg { stroke: #e0e0e0; }
-    .gauge__progress {
-      stroke: var(--clr-primary);
-      stroke-linecap: round;
-      transition: stroke-dasharray .5s ease;
-      transform: rotate(-90 80 80);
-    }
-    .gauge__text {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      font-weight: 700;
-      font-size: 1.2rem;
-      color: var(--clr-primary);
-    }
-    .gauge__label {
-      margin-top: .5rem;
-      font-weight: 600;
-      font-size: 1rem;
-      color: var(--clr-primary);
-    }
-
-    /* ----------  WEATHER PANEL  ---------- */
-    .weather-panel h2 {
-      font-weight: 600;
-      font-size: 1.3rem;
-      margin: 0 0 1.8rem;
-      color: var(--clr-header);
-      border-bottom: 2px solid #a5d6a7;
-      padding-bottom: .3rem;
-    }
-    .weather-info { display: flex; flex-direction: column; gap: 1.1rem; font-size: 1.1rem; }
-    .weather-row {
-      display: flex;
-      justify-content: space-between;
-      border-bottom: 1px solid #d3e4cd;
-      padding-bottom: .3rem;
-    }
-    .weather-row:last-child { border: 0; }
-    .weather-label { font-weight: 600; color: #558b2f; }
-    .weather-value { font-weight: 700; color: var(--clr-header); display: flex; align-items: center; gap: .4rem; }
-    .weather-emoji { font-size: 2rem; }
-
-    /* ----------  SCROLLBAR  ---------- */
-    .main-content::-webkit-scrollbar { width: 10px; }
-    .main-content::-webkit-scrollbar-thumb { background: #9ccc65; border-radius: 8px; }
-
-    /* ----------  RESPONSIVE  ---------- */
-    @media (max-width: 800px) {
-      .container { flex-direction: column; padding: 1rem 1.2rem; }
-      .weather-panel { width: 100%; margin-top: 1.8rem; }
-      .gauges-section { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
-      .gauge { width: 120px; height: 120px; }
-    }
+    @media (max-width: 420px) { .top-header h1 { font-size: 1.05rem; } }
   </style>
 </head>
 <body>
-  <header>Dashboard – Decision Support System</header>
+  <header class="top-header" role="banner">
+    <h1>Dashboard – Decision Support System</h1>
+  </header>
 
-  <div class="container">
-    <main class="main-content">
-      <div class="welcome-message">
-        <h2>Gauge Color Legend</h2>
-        <p>According to CDRRMO Heat-Index Thresholds:</p>
-        <ul>
-          <li><span style="color: #4caf50;">Green:</span> Caution (27–32 °C) – Low risk</li>
-          <li><span style="color: #ff9800;">Yellow:</span> Extreme Caution (33–41 °C) – Higher risk</li>
-          <li><span style="color: #ff5722;">Orange:</span> Danger (42–51 °C) – Likely heat issues</li>
-          <li><span style="color: #f44336;">Red:</span> Extreme Danger (≥52 °C) – High risk of heat stroke</li>
-        </ul>
-      </div>
+  <main>
+    <div class="viewer-wrapper">
+      <section class="viewer-card" aria-label="3D viewer">
+        <div id="canvas-container" aria-hidden="false"></div>
 
-      <section class="gauges-section">
-        <div class="gauge" id="temperature-gauge"></div>
-        <div class="gauge" id="humidity-gauge"></div>
-        <div class="gauge" id="heat-index-gauge"></div>
+        <!-- Status panel for live sensor values (populated by JS) -->
+        <div class="status-bar" role="status" aria-live="polite">
+          <div class="status-item">
+            <div class="status-label">Temp</div>
+            <div id="temp" class="status-value">-- °C</div>
+          </div>
+          <div class="status-item">
+            <div class="status-label">Humidity</div>
+            <div id="hum" class="status-value">-- %</div>
+          </div>
+          <div class="status-item" id="load-status">Model: <span class="status-value">—</span></div>
+        </div>
       </section>
-    </main>
+    </div>
+  </main>
 
-    <aside class="weather-panel" aria-label="Weather information">
-      <h2 id="location">Detecting location…</h2>
-      <div class="weather-info" id="weather-info">Fetching weather data…</div>
-    </aside>
-  </div>
+  <script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+    import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
+    import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 
-  <!-- ----------  Firebase SDK  ---------- -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color('#f5f7fa');
 
-  <script>
-    /* =========================  CONFIGURATION  ========================= */
-    const CONFIG = {
-      firebase: {
-        apiKey: "AIzaSyCq6MUL63iHYpOrGqoQrWCjDPWhOnNajmQ",
-        authDomain: "dss-database-51609.firebaseapp.com",
-        projectId: "dss-database-51609"
+    const camera = new THREE.PerspectiveCamera(
+      45,
+      Math.max(container.clientWidth, 1) / Math.max(container.clientHeight, 1),
+      0.1,
+      100
+    );
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+
+    // Lights
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    dirLight.position.set(5, 5, 5);
+    scene.add(dirLight, new THREE.AmbientLight(0xffffff, 0.5));
+
+    // Cache reference to loaded GLTF (used by helper functions)
+    let gltfCache = null;
+
+    const loader = new GLTFLoader();
+    loader.load(
+      'classroom_generated.glb',
+      (gltf) => {
+        gltfCache = gltf;
+        scene.add(gltf.scene);
+        fitCameraToObject(gltf.scene);
+        console.log('✅ classroom loaded');
+        listMaterials(gltf);
+        document.getElementById('load-status').querySelector('.status-value').textContent = 'Loaded';
+        dummyUpdate(); // start fake sensor updates
       },
-      thresholds: {           // CDRRMO colour breaks (°C)
-        caution: 27,
-        extremeCaution: 33,
-        danger: 42,
-        extremeDanger: 52
+      (progress) => {
+        if (progress && progress.total) {
+          const pct = Math.round((progress.loaded / progress.total) * 100);
+          console.log('Loading:', pct + '%');
+        }
       },
-      gaugeLimits: {          // max scale on dial
-        temperature: 100,
-        humidity: 100,
-        heatIndex: 70
-      },
-      updateInterval: 500     // ms (Firestore delivers instantly)
-    };
-
-    /* =========================  FIREBASE INIT  ========================= */
-    firebase.initializeApp(CONFIG.firebase);
-    const db = firebase.firestore();
-
-    /* =========================  WEATHER: EMOJI & DESC  ========================= */
-    const WEATHER_EMOJIS = {
-      0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️", 45: "🌫️", 48: "🌫️",
-      51: "🌦️", 53: "🌦️", 55: "🌦️", 56: "🌨️", 57: "🌨️",
-      61: "🌧️", 63: "🌧️", 65: "🌧️", 66: "🌨️", 67: "🌨️",
-      71: "❄️", 73: "❄️", 75: "❄️", 77: "❄️", 80: "🌧️",
-      81: "🌧️", 82: "🌧️", 85: "❄️", 86: "❄️", 95: "⛈️",
-      96: "⛈️", 99: "⛈️"
-    };
-    const WEATHER_DESC = {
-      0: "Clear sky", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
-      45: "Fog", 48: "Depositing rime fog", 51: "Light drizzle", 53: "Moderate drizzle",
-      55: "Dense drizzle", 56: "Light freezing drizzle", 57: "Dense freezing drizzle",
-      61: "Slight rain", 63: "Moderate rain", 65: "Heavy rain", 66: "Light freezing rain",
-      67: "Heavy freezing rain", 71: "Slight snowfall", 73: "Moderate snowfall",
-      75: "Heavy snowfall", 77: "Snow grains", 80: "Slight rain showers",
-      81: "Moderate rain showers", 82: "Violent rain showers", 85: "Slight snow showers",
-      86: "Heavy snow showers", 95: "Thunderstorm", 96: "Thunderstorm with slight hail",
-      99: "Thunderstorm with heavy hail"
-    };
-
-    /* =========================  HELPER: m/s → km/h  ========================= */
-    const msToKph = ms => (ms * 3.6).toFixed(1);
-
-    /* =========================  HELPER: HEAT-INDEX (°C)  ========================= */
-    /**
-     * Calculates NOAA heat-index from Celsius temperature and % relative humidity.
-     * @param {number} T  – air temperature (°C)
-     * @param {number} RH – relative humidity (%)
-     * @returns {number}  – heat-index (°C)
-     */
-    function heatIndex(T, RH) {
-      const Tf = T * 9/5 + 32;
-      const HI = -42.379
-        + 2.04901523 * Tf
-        + 10.14333127 * RH
-        - 0.22475541   * Tf * RH
-        - 6.83783e-3   * Tf * Tf
-        - 5.481717e-2  * RH * RH
-        + 1.22874e-3   * Tf * Tf * RH
-        + 8.5282e-4    * Tf * RH * RH
-        - 1.99e-6      * Tf * Tf * RH * RH;
-      return (HI - 32) * 5/9;
-    }
-
-    /* =========================  HELPER: COLOUR FOR THRESHOLD  ========================= */
-    /**
-     * Returns gauge colour according to CDRRMO heat-index thresholds.
-     * @param {number} value – temperature or heat-index (°C)
-     * @param {'temperature'|'humidity'} type – which scale to use
-     * @returns {string} – hex colour
-     */
-    function getGaugeColor(value, type) {
-      if (type === 'temperature') {
-        if (value >= CONFIG.thresholds.extremeDanger) return '#f44336';
-        if (value >= CONFIG.thresholds.danger)       return '#ff5722';
-        if (value >= CONFIG.thresholds.extremeCaution) return '#ff9800';
-        if (value >= CONFIG.thresholds.caution)      return '#4caf50';
-        return '#2196f3';
+      (err) => {
+        console.error('❌ load error', err);
+        document.getElementById('load-status').querySelector('.status-value').textContent = 'Error';
       }
-      if (type === 'humidity') {
-        if (value >= CONFIG.thresholds.extremeDanger) return '#f44336';
-        if (value >= CONFIG.thresholds.danger)       return '#ff5722';
-        if (value >= CONFIG.thresholds.extremeCaution) return '#ff9800';
-        if (value >= CONFIG.thresholds.caution)      return '#4caf50';
-        return '#4caf50';
-      }
-      return '#4caf50';
+    );
+
+    // Animation loop
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
     }
+    animate();
 
-    /* =========================  GAUGE: CREATE / UPDATE  ========================= */
-    /**
-     * Draws or updates a single SVG gauge.
-     * @param {string} id        – element id (without #)
-     * @param {number} value     – current reading
-     * @param {number} max       – scale maximum
-     * @param {string} unit      – °C, %, etc.
-     * @param {'temperature'|'humidity'} colorType – which colour scale
-     */
-    function updateGauge(id, value, max, unit, colorType) {
-      const wrap     = document.getElementById(id);
-      const radius   = 60;
-      const circ     = 2 * Math.PI * radius;
-      const pct      = Math.min(value / max, 1);
-
-      /* first run – create SVG */
-      if (!wrap.querySelector('svg')) {
-        wrap.innerHTML = `
-          <svg viewBox="0 0 160 160">
-            <circle cx="80" cy="80" r="${radius}" stroke="#e0e0e0" stroke-width="15" fill="none" class="gauge__bg"/>
-            <circle cx="80" cy="80" r="${radius}" stroke-width="15" fill="none" stroke-linecap="round"
-                    class="gauge__progress" transform="rotate(-90 80 80)"/>
-          </svg>
-          <div class="gauge__text"></div>
-          <div class="gauge__label">${id.replace('-gauge','').replace('-',' ').toUpperCase()}</div>`;
-      }
-
-      /* update */
-      const progress = wrap.querySelector('.gauge__progress');
-      progress.style.strokeDasharray = `${pct * circ} ${circ}`;
-      progress.style.stroke          = getGaugeColor(value, colorType);
-
-      wrap.querySelector('.gauge__text').textContent = `${value.toFixed(1)}${unit}`;
-    }
-
-    /* =========================  FIRESTORE: REAL-TIME GAUGES  ========================= */
-    /**
-     * Attaches a Firestore listener to the newest document in 'readings'
-     * and refreshes the three gauges instantly.
-     */
-    function listenToReadings() {
-      db.collection('readings')
-        .orderBy('ts','desc')
-        .limit(1)
-        .onSnapshot(snap => {
-          if (snap.empty) return;
-          const d = snap.docs[0].data();
-          const t  = d.temperature;
-          const h  = d.humidity;
-          const hi = heatIndex(t, h);
-
-          updateGauge('temperature-gauge', t,  CONFIG.gaugeLimits.temperature, '°C', 'temperature');
-          updateGauge('humidity-gauge',    h,  CONFIG.gaugeLimits.humidity,    '%',  'humidity');
-          updateGauge('heat-index-gauge',  hi, CONFIG.gaugeLimits.heatIndex,   '°C', 'temperature');
-        }, err => console.error('Firestore listener failed:', err));
-    }
-
-    /* =========================  WEATHER PANEL  ========================= */
-    /**
-     * Fetches current weather + humidity from Open-Meteo and city name from
-     * Nominatim, then populates the right-hand weather card.
-     * @param {number} lat – latitude
-     * @param {number} lon – longitude
-     */
-    async function fetchWeather(lat, lon) {
-      const locationElem = document.getElementById('location');
-      const infoElem     = document.getElementById('weather-info');
-      locationElem.textContent = 'Fetching weather for your location…';
-
-      try {
-        // 1.  Weather data
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relative_humidity_2m&timezone=auto`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(res.status);
-        const data = await res.json();
-        const current = data.current_weather;
-        const hourlyHum = data.hourly.relative_humidity_2m;
-        const hourlyTime = data.hourly.time;
-        const humIdx = hourlyTime.indexOf(current.time);
-        const humidity = humIdx !== -1 ? hourlyHum[humIdx] : null;
-
-        // 2.  City name
-        let city = `Lat ${lat.toFixed(3)}, Lon ${lon.toFixed(3)}`;
-        try {
-          const geo = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`, {
-            headers: { 'User-Agent': 'DSS-Dashboard/1.0' }
-          });
-          const g = await geo.json();
-          const a = g.address;
-          const name = [a.city, a.town, a.municipality, a.village].find(Boolean);
-          if (name) city = `${name}${a.country ? ', ' + a.country : ''}`;
-        } catch (e) { /* ignore */ }
-
-        // 3.  Render
-        locationElem.textContent = `Weather in ${city}`;
-        const emoji = WEATHER_EMOJIS[current.weathercode] || '❓';
-        const desc  = WEATHER_DESC[current.weathercode]  || 'Unknown weather';
-
-        infoElem.innerHTML = `
-          <div class="weather-row">
-            <span class="weather-label">Temperature</span>
-            <span class="weather-value">${current.temperature} °C</span>
-          </div>
-          <div class="weather-row">
-            <span class="weather-label">Windspeed</span>
-            <span class="weather-value">${msToKph(current.windspeed)} kph</span>
-          </div>
-          <div class="weather-row">
-            <span class="weather-label">Humidity</span>
-            <span class="weather-value">${humidity !== null ? humidity + '%' : 'N/A'}</span>
-          </div>
-          <div class="weather-row">
-            <span class="weather-label">Weather</span>
-            <span class="weather-value">${desc} <span class="weather-emoji" aria-label="${desc}">${emoji}</span></span>
-          </div>`;
-      } catch (err) {
-        locationElem.textContent = 'Weather unavailable';
-        infoElem.textContent = 'Error loading weather data.';
-        console.warn('Weather fetch failed:', err);
-      }
-    }
-
-    /**
-     * Browser geo-location wrapper; falls back to Cabuyao City.
-     */
-    function autoDetectLocation() {
-      if (!navigator.geolocation) return fetchWeather(14.2786, 121.1244);
-      navigator.geolocation.getCurrentPosition(
-        pos => fetchWeather(pos.coords.latitude, pos.coords.longitude),
-        () => fetchWeather(14.2786, 121.1244),
-        { enableHighAccuracy: false, timeout: 5000 }
-      );
-    }
-
-    /* =========================  BOOTSTRAP  ========================= */
-    window.addEventListener('DOMContentLoaded', () => {
-      autoDetectLocation();   // weather panel
-      listenToReadings();     // real-time gauges
+    // Handle resize
+    window.addEventListener('resize', () => {
+      camera.aspect = Math.max(container.clientWidth, 1) / Math.max(container.clientHeight, 1);
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
     });
+
+    /* ---------- helpers ---------- */
+
+    function fitCameraToObject(object) {
+      const box = new THREE.Box3().setFromObject(object);
+      const center = box.getCenter(new THREE.Vector3());
+      const size = box.getSize(new THREE.Vector3());
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const fov = (camera.fov * Math.PI) / 180;
+      const camZ = Math.abs((maxDim / 2) / Math.tan(fov / 2)) * 1.5;
+      camera.position.set(center.x, center.y + size.y / 3, center.z + camZ);
+      controls.target.copy(center);
+      controls.update();
+    }
+
+    function listMaterials(gltf) {
+      gltf.scene.traverse((o) => {
+        if (o.isMesh && o.material) {
+          console.log('material name:', o.material.name || '(unnamed)');
+        }
+      });
+    }
+
+    function setMaterialColor(gltf, matName, hexColor) {
+      if (!gltf || !gltf.scene) return;
+      gltf.scene.traverse((o) => {
+        if (o.isMesh && o.material && o.material.name === matName) {
+          o.material.color.set(hexColor);
+          o.material.needsUpdate = true;
+        }
+      });
+    }
+
+    /* ------------------------------------------------------------- */
+    /*  Fake sensor update (replace with real WebSocket / fetch)     */
+    /* ------------------------------------------------------------- */
+    function dummyUpdate() {
+      const temp = 20 + Math.random() * 15; // °C
+      const hum = 40 + Math.random() * 30; // %RH
+      const deskColor = temp > 28 ? '#ff3b30' : temp > 24 ? '#ff9500' : '#34c759';
+
+      if (gltfCache) {
+        setMaterialColor(gltfCache, 'Desk_mat', deskColor); // Blender material name
+      }
+
+      const tempEl = document.getElementById('temp');
+      const humEl = document.getElementById('hum');
+      if (tempEl) tempEl.textContent = temp.toFixed(1) + ' °C';
+      if (humEl) humEl.textContent = hum.toFixed(1) + ' %';
+
+      setTimeout(dummyUpdate, 2000);
+    }
   </script>
 </body>
 </html>
-
