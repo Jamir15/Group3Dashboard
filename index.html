@@ -71,28 +71,25 @@
     </div>
   </main>
 
-  <script type="module">
-    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-    import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
-    import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js"></script>
 
-    const container = document.getElementById('canvas-container');
+  <script>
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#f5f7fa');
-
     const camera = new THREE.PerspectiveCamera(
       45,
-      Math.max(container.clientWidth, 1) / Math.max(container.clientHeight, 1),
+      Math.max(window.innerWidth, 1) / Math.max(window.innerHeight, 1),
       0.1,
       100
     );
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    container.appendChild(renderer.domElement);
+    document.body.appendChild(renderer.domElement);
 
-    const controls = new OrbitControls(camera, renderer.domElement);
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
 
     // Lights
@@ -100,29 +97,19 @@
     dirLight.position.set(5, 5, 5);
     scene.add(dirLight, new THREE.AmbientLight(0xffffff, 0.5));
 
-    // Cache reference to loaded GLTF (used by helper functions)
-    let gltfCache = null;
-
-    const loader = new GLTFLoader();
+    const loader = new THREE.GLTFLoader();
     loader.load(
       'classroom_generated.glb',
-      (gltf) => {
-        gltfCache = gltf;
+      function (gltf) {
         scene.add(gltf.scene);
         fitCameraToObject(gltf.scene);
         console.log('✅ classroom loaded');
-        listMaterials(gltf);
         document.getElementById('load-status').querySelector('.status-value').textContent = 'Loaded';
         dummyUpdate(); // start fake sensor updates
       },
-      (progress) => {
-        if (progress && progress.total) {
-          const pct = Math.round((progress.loaded / progress.total) * 100);
-          console.log('Loading:', pct + '%');
-        }
-      },
-      (err) => {
-        console.error('❌ load error', err);
+      undefined,
+      function (error) {
+        console.error('❌ load error', error);
         document.getElementById('load-status').querySelector('.status-value').textContent = 'Error';
       }
     );
@@ -133,13 +120,14 @@
       controls.update();
       renderer.render(scene, camera);
     }
+
     animate();
 
     // Handle resize
     window.addEventListener('resize', () => {
-      camera.aspect = Math.max(container.clientWidth, 1) / Math.max(container.clientHeight, 1);
+      camera.aspect = Math.max(window.innerWidth, 1) / Math.max(window.innerHeight, 1);
       camera.updateProjectionMatrix();
-      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
     /* ---------- helpers ---------- */
