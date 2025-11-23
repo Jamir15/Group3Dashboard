@@ -4,183 +4,41 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GLB Viewer</title>
-  <meta name="description" content="Simple Three.js GLB viewer with live status indicators.">
 
-  <!-- Google font + reset -->
+  <link rel="stylesheet" href="index.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-      background: #f5f7fa;
-      color: #111;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
+
+  <!-- Import Map for Three.js modules -->
+  <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.163.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.163.0/examples/jsm/"
     }
-
-    /* Header */
-    .top-header {
-      background: #28a745;
-      color: #fff;
-      padding: 0.6rem 0.75rem;
-    }
-    .top-header h1 { font-size: 1.35rem; font-weight: 600; }
-
-    /* Viewer card */
-    .viewer-wrapper { display: flex; justify-content: center; padding: 2rem 1rem; }
-    .viewer-card {
-      width: 100%; max-width: 900px; background: #fff; border-radius: 12px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.08); overflow: hidden;
-    }
-
-    #canvas-container { width: 100%; aspect-ratio: 16/9; position: relative; background: #eef2f6; }
-    canvas { display: block; width: 100%; height: 100%; }
-
-    /* Status bar below the canvas */
-    .status-bar { display: flex; gap: 1rem; align-items: center; padding: 0.75rem 1rem; font-size: 0.95rem; color: #333; }
-    .status-item { display: flex; gap: 0.5rem; align-items: baseline; }
-    .status-label { opacity: 0.7; font-size: 0.85rem; }
-    .status-value { font-weight: 600; }
-
-    @media (max-width: 420px) { .top-header h1 { font-size: 1.05rem; } }
-  </style>
+  }
+  </script>
 </head>
 <body>
-  <header class="top-header" role="banner">
-    <h1>Dashboard – Decision Support System</h1>
+  <header class="top-header">
+    Dashboard – Decision Support System
   </header>
 
-  <main>
-    <div class="viewer-wrapper">
-      <section class="viewer-card" aria-label="3D viewer">
-        <div id="canvas-container" aria-hidden="false"></div>
+  <div class="viewer-wrapper">
+    <div class="viewer-card">
+      <div id="canvas-container"></div>
 
-        <!-- Status panel for live sensor values (populated by JS) -->
-        <div class="status-bar" role="status" aria-live="polite">
-          <div class="status-item">
-            <div class="status-label">Temp</div>
-            <div id="temp" class="status-value">-- °C</div>
-          </div>
-          <div class="status-item">
-            <div class="status-label">Humidity</div>
-            <div id="hum" class="status-value">-- %</div>
-          </div>
-          <div class="status-item" id="load-status">Model: <span class="status-value">—</span></div>
-        </div>
-      </section>
+      <div class="status-bar">
+        <div>Temp: <span id="temp">-- °C</span></div>
+        <div>Humidity: <span id="hum">-- %</span></div>
+        <div>Model Status: <span id="load-status">Loading…</span></div>
+        <!-- <div>Materials Found:</div> -->
+        <!-- <div id="materials">Scanning…</div> -->
+      </div>
     </div>
-  </main>
+  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js"></script>
-
-  <script>
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(
-      45,
-      Math.max(window.innerWidth, 1) / Math.max(window.innerHeight, 1),
-      0.1,
-      100
-    );
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    document.body.appendChild(renderer.domElement);
-
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-
-    // Lights
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    dirLight.position.set(5, 5, 5);
-    scene.add(dirLight, new THREE.AmbientLight(0xffffff, 0.5));
-
-    const loader = new THREE.GLTFLoader();
-    loader.load(
-      'classroom_generated.glb',
-      function (gltf) {
-        scene.add(gltf.scene);
-        fitCameraToObject(gltf.scene);
-        console.log('✅ classroom loaded');
-        document.getElementById('load-status').querySelector('.status-value').textContent = 'Loaded';
-        dummyUpdate(); // start fake sensor updates
-      },
-      undefined,
-      function (error) {
-        console.error('❌ load error', error);
-        document.getElementById('load-status').querySelector('.status-value').textContent = 'Error';
-      }
-    );
-
-    // Animation loop
-    function animate() {
-      requestAnimationFrame(animate);
-      controls.update();
-      renderer.render(scene, camera);
-    }
-
-    animate();
-
-    // Handle resize
-    window.addEventListener('resize', () => {
-      camera.aspect = Math.max(window.innerWidth, 1) / Math.max(window.innerHeight, 1);
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-
-    /* ---------- helpers ---------- */
-
-    function fitCameraToObject(object) {
-      const box = new THREE.Box3().setFromObject(object);
-      const center = box.getCenter(new THREE.Vector3());
-      const size = box.getSize(new THREE.Vector3());
-      const maxDim = Math.max(size.x, size.y, size.z);
-      const fov = (camera.fov * Math.PI) / 180;
-      const camZ = Math.abs((maxDim / 2) / Math.tan(fov / 2)) * 1.5;
-      camera.position.set(center.x, center.y + size.y / 3, center.z + camZ);
-      controls.target.copy(center);
-      controls.update();
-    }
-
-    function listMaterials(gltf) {
-      gltf.scene.traverse((o) => {
-        if (o.isMesh && o.material) {
-          console.log('material name:', o.material.name || '(unnamed)');
-        }
-      });
-    }
-
-    function setMaterialColor(gltf, matName, hexColor) {
-      if (!gltf || !gltf.scene) return;
-      gltf.scene.traverse((o) => {
-        if (o.isMesh && o.material && o.material.name === matName) {
-          o.material.color.set(hexColor);
-          o.material.needsUpdate = true;
-        }
-      });
-    }
-
-    /* ------------------------------------------------------------- */
-    /*  Fake sensor update (replace with real WebSocket / fetch)     */
-    /* ------------------------------------------------------------- */
-    function dummyUpdate() {
-      const temp = 20 + Math.random() * 15; // °C
-      const hum = 40 + Math.random() * 30; // %RH
-      const deskColor = temp > 28 ? '#ff3b30' : temp > 24 ? '#ff9500' : '#34c759';
-
-      if (gltfCache) {
-        setMaterialColor(gltfCache, 'Desk_mat', deskColor); // Blender material name
-      }
-
-      const tempEl = document.getElementById('temp');
-      const humEl = document.getElementById('hum');
-      if (tempEl) tempEl.textContent = temp.toFixed(1) + ' °C';
-      if (humEl) humEl.textContent = hum.toFixed(1) + ' %';
-
-      setTimeout(dummyUpdate, 2000);
-    }
-  </script>
+  <!-- Main JS module (just like the sample project) -->
+  <script type="module" src="./main.js"></script>
 </body>
 </html>
