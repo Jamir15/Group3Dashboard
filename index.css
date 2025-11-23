@@ -1,0 +1,58 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: #f5f7fa;
+}
+
+.top-header {
+  background: #28a745;
+  color: white;
+  padding: 0.8rem 1rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.viewer-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem; 
+}
+
+.viewer-card {
+  width: 100%;
+  max-width: 900px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0,0.08);
+  overflow: hidden;
+}
+
+#canvas-container {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #eef2f6;
+  position: relative;
+}
+
+.status-bar {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+}
+
+#materials {
+  white-space: pre-wrap;
+  background: #f0f0f0;
+  padding: 0.7rem;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  font-family: monospace;
+  font-size: 0.8rem;
+}
