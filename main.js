@@ -57,7 +57,7 @@ const loader = new GLTFLoader();
 //  - onProgress(progress): logs percent loaded (useful for large files).
 //  - onError(err): logs the error and updates UI status.
 loader.load(
-  "classroom.glb",
+  "classroom_reduceSize.glb",
   (gltf) => {
     mainModel = gltf.scene;
 
