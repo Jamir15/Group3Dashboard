@@ -12,16 +12,16 @@
 // -------------------------------
 // WiFi Credentials
 // -------------------------------
-const char* WIFI_SSID = "ROYAL_CABLE_F15E"; //WIFI you will connect to
-const char* WIFI_PASS = "022310342"; //Password of the wifi you will connect to
+const char* WIFI_SSID = " "; //WIFI you will connect to
+const char* WIFI_PASS = " "; //Password of the wifi you will connect to
 
 // -------------------------------
 // Firebase Credentials
 // -------------------------------
-const char* FIREBASE_API_KEY  = "AIzaSyCq6MUL63iHYpOrGqoQrWCjDPWhOnNajmQ"; //Firebase api key
-const char* FIREBASE_EMAIL    = "nodemcu@gmail.com";                       //Firebase email
-const char* FIREBASE_PASSWORD = "databasesender";                          //Firebase password
-const char* PROJECT_ID        = "dss-database-51609";                      //Project ID
+const char* FIREBASE_API_KEY  = " "; //Firebase api key
+const char* FIREBASE_EMAIL    = " @gmail.com";                       //Firebase email
+const char* FIREBASE_PASSWORD = " ";                          //Firebase password
+const char* PROJECT_ID        = " ";                      //Project ID
 
 // Firestore URL
 String FIREBASE_URL = String("https://firestore.googleapis.com/v1/projects/") + "dss-database-51609" + "/databases/(default)/documents/sensorData";
