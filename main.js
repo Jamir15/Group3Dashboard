@@ -7,13 +7,15 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { initializeApp } from 'firebase/app';
 import {
-    getFirestore,
+    getFirestore,  //Ginawa kong ganito para madali mahanap tsaka readable
     collection,
     onSnapshot,
     query,
     orderBy,
     limit
 } from 'firebase/firestore';
+import { Chart, registerables } from "chart.js/auto";
+Chart.register(...registerables);
 
 /* --------------------------------------------------------------
  * 1. Firebase configuration
@@ -100,17 +102,228 @@ function computeHeatIndex(t, h) {
     return (t + h * 0.01).toFixed(2);
 }
 
-/* --------------------------------------------------------------
- * 4. Dashboard updating
- * -------------------------------------------------------------- */
-function updateDashboard(temp, humidity) {
-    document.getElementById("temp-val").textContent = temp.toFixed(1);
-    document.getElementById("hum-val").textContent = humidity.toFixed(1);
-    document.getElementById("hi-val").textContent = computeHeatIndex(temp, humidity);
+// Logic for Decsision Support System
+function getHeatIndexAdvisory(hi) {
+    if (hi >= 27 && hi <= 32) {
+        return [
+            "Possible: fatigue with prolonged exposure",
+            "Low risk, but still uncomfortable"
+        ];
+    }
+    if (hi >= 33 && hi <= 41) {
+        return [
+            "Higher chance of heat cramps",
+            "Possible heat exhaustion",
+            "Extra hydration and breaks needed",
+            "Vulnerable groups (children, elderly) are more at risk"
+        ];
+    }
+    if (hi >= 42 && hi <= 51) {
+        return [
+            "Likely: heat cramps and heat exhaustion",
+            "Heat stroke becomes possible with prolonged exposure",
+            "Outdoor activities become risky",
+            "Reference point often used by Cabuyao for considering class suspension"
+        ];
+    }
+    if (hi >= 52) {
+        return [
+            "Heat stroke highly likely",
+            "Very unsafe for outdoor activities and prolonged exposure",
+            "Immediate protective measures required"
+        ];
+    }
+
+    return ["Heat index below threshold range."];
 }
 
 /* --------------------------------------------------------------
- * 5. Firestore real-time listener
+ 4. Notification Banner for Extreme Heat Index
+-------------------------------------------------------------- */
+function showAlertBanner(message) {
+    const banner = document.getElementById("alert-banner");
+    const msg = document.getElementById("alert-message");
+
+    msg.textContent = message;
+
+    banner.classList.remove("hidden");
+    banner.classList.add("show");
+
+    // Hide automatically after 5 seconds
+    setTimeout(() => {
+        banner.classList.remove("show");
+        banner.classList.add("hidden");
+    }, 5000);
+}
+
+// Shift + N
+//Manual control for testing notification banner
+document.addEventListener("keydown", e => {
+    if (e.shiftKey && e.key === "N") {                                    //Press "shift + N" to trigger alert banner
+        showAlertBanner("⚠️WARNING: Heat index is greater than 45°C⚠️"); //This will be used for demonstration purposes
+    }
+});
+
+/* --------------------------------------------------------------
+ 5. Noticication Banner for Peak Heat Hours
+-------------------------------------------------------------- */
+function showPeakBanner() {
+    const banner = document.getElementById('peak-heat-banner');
+    banner.classList.remove('hidden');
+    banner.classList.add('show');
+
+    // Hide automatically after 5 seconds
+    setTimeout(() => {
+        banner.classList.remove('show');
+        banner.classList.add('hidden');
+    }, 5000);
+}
+
+//logic to show the peak heat hours banner
+function checkPeakHeatHours() {
+    const now = new Date();
+    const hour = now.getHours();          // 0-23
+    if (hour >= 11 && hour < 16) {        // 11 AM – 4 PM
+        showPeakBanner();                 // orange
+        return true;
+    }
+    return false;
+}
+
+//Shift + P
+//Manual control for testing peak heat hours banner
+document.addEventListener("keydown", e => {  
+    if (e.shiftKey && e.key === "P") {             // Press "SHIFT + P" to trigger peak heat hours banner
+        showPeakBanner("🌤️ Manual Test: Peak Heat Hours Reminder Triggered.");                          //This will be used for demonstration purposes
+    }
+});
+
+/* --------------------------------------------------------------
+ 6. Dashboard updating
+-------------------------------------------------------------- */
+// Function to display heat index label
+function getHeatIndexLabel(hi) {
+    if (hi >= 27 && hi <= 32) return "Caution";
+    if (hi >= 33 && hi <= 41) return "Extreme Caution";
+    if (hi >= 42 && hi <= 51) return "Danger";
+    if (hi >= 52) return "Extreme Danger";
+    return "Normal";
+}
+
+// Update dashboard values
+function updateDashboard(temp, humidity) {
+    const hi = parseFloat(computeHeatIndex(temp, humidity));
+
+    document.getElementById("temp-val").textContent = temp.toFixed(1);
+    document.getElementById("hum-val").textContent = humidity.toFixed(1);
+    document.getElementById("hi-val").textContent = hi.toFixed(1);
+
+    // Show alert banner if Heat Index exceeds 45°C
+    if (hi > 45) {
+        showAlertBanner("WARNING: Heat index is greater than 45°C");
+    }
+
+    //Display Heat Index Label
+    const label = getHeatIndexLabel(hi);
+    document.getElementById("dss-title").textContent = `Heat Index Advisory (Decision Support System): ${label}`;
+
+    // Use Logic for Decision Support System
+    const advisory = getHeatIndexAdvisory(hi);
+    const dssBox = document.getElementById("dss-content");
+
+    dssBox.innerHTML = advisory.map(item => `<p>• ${item}</p>`).join("");
+}
+
+/* --------------------------------------------------------------
+ * 7. Sparkline Charts Setup
+ * -------------------------------------------------------------- */
+let sensorChart = null;
+let chartData = {
+    labels: [],
+    temp: [],
+    hum: [],
+    hi: []
+};
+// Initialize the sparkline chart
+function initSparkline() {
+    const ctx = document.getElementById('sensorChart').getContext('2d');
+
+    sensorChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartData.labels,
+            datasets: [
+                {
+                    label: 'Temperature (°C)',
+                    data: chartData.temp,
+                    borderColor: 'red',
+                    backgroundColor: 'rgba(255,0,0,0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 0
+                },
+                {
+                    label: 'Humidity (hPa)',
+                    data: chartData.hum,
+                    borderColor: 'blue',
+                    backgroundColor: 'rgba(0,0,255,0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 0
+                },
+                {
+                    label: 'Heat Index (°C)',
+                    data: chartData.hi,
+                    borderColor: 'orange',
+                    backgroundColor: 'rgba(255,165,0,0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 0
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: true, position: 'top' } },
+            scales: {
+                x: { display: false },
+                y: { 
+                    beginAtZero: true,
+                    //----------------------------------------------------------------------------------------
+                    //Commented this out for now, becuase the values are too static, spikes cannot be seen yet
+                    //----------------------------------------------------------------------------------------
+                    // min: 29,              // lower bound just below your usual low
+                    // max: 36,              // upper bound just above your usual high
+                    // ticks: { maxTicksLimit: 3 } // keeps the tiny graph clean
+                }
+            }
+        }
+    });
+}
+
+// Update sparkline with new data
+function updateSparkline(temp, hum, hi) {
+    const ts = new Date().toLocaleTimeString();
+
+    chartData.labels.push(ts);
+    chartData.temp.push(temp);
+    chartData.hum.push(hum);
+    chartData.hi.push(hi);
+
+    // Keep only last 20 points
+    if (chartData.labels.length > 20) {
+        chartData.labels.shift();
+        chartData.temp.shift();
+        chartData.hum.shift();
+        chartData.hi.shift();
+    }
+
+    if (sensorChart) sensorChart.update();
+}
+
+/* --------------------------------------------------------------
+ * 8. Firestore real-time listener
  * -------------------------------------------------------------- */
 function listenToData() {
     const q = query(
@@ -119,28 +332,51 @@ function listenToData() {
         limit(1)
     );
 
-    onSnapshot(q, snapshot => {
-        if (snapshot.empty) {
-            console.warn("Firestore: No documents found.");
-            return;
-        }
+    // Snapshot should exist inside this callback
+    onSnapshot(
+        q,
+        (snapshot) => {
+            console.log("Firestore listener triggered. Doc count =", snapshot.size);
 
-        const data = snapshot.docs[0].data();
-        const temp = Number(data.temperature);
-        const hum = Number(data.humidity);
+            if (snapshot.empty) {
+                console.warn("Firestore: No documents found.");
+                return;
+            }
 
-        if (!isNaN(temp) && !isNaN(hum)) {
-            updateDashboard(temp, hum);
-        } else {
-            console.warn("Firestore invalid data:", data);
-        }
-    }, err => console.error("Firestore listener error:", err));
+            const data = snapshot.docs[0].data();
+            const temp = Number(data.temperature);
+            const hum = Number(data.humidity);
+
+            console.log("Received Firestore data:", data);
+
+            if (!isNaN(temp) && !isNaN(hum)) {
+                updateDashboard(temp, hum);                                          // Update dashboard values
+                updateSparkline(temp, hum, parseFloat(computeHeatIndex(temp, hum))); // Update sparkline chart
+            } else {
+                console.warn("Firestore invalid numeric data:", data);
+            }
+        },
+        (err) => console.error("Firestore listener error:", err)
+    );
 }
 
 /* --------------------------------------------------------------
- * 6. BOOT ALL SYSTEMS
+ * 8. BOOT ALL SYSTEMS
  * -------------------------------------------------------------- */
 window.onload = () => {
+
+    //Check for Peak Heat Hours on load
+    checkPeakHeatHours();
+
+    //Check every minute if it is still Peak Heat Hours
+    setInterval(checkPeakHeatHours, 60000); // 60000 ms = 1 minute
+
+    //Initialize Three.js viewer
     initThreeJS();
+
+    //Initialize Sparkline Chart
+    initSparkline();
+
+    //Start listening to Firestore data
     listenToData();
 };
