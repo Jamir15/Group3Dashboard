@@ -20,6 +20,16 @@
     </script>
 </head>
 <body>
+    <!-- Notification banner if Heat Index is greater than 45°C-->
+     <div id="alert-banner" class="hidden">
+        <p id="alert-message">⚠️WARNING: Heat index is greater than 45°C⚠️</p>
+     </div>
+     
+     <!-- Peak Heat Hours Banner in different banner -->
+    <div id="peak-heat-banner" class="hidden">
+        <p id="peak-heat-message">🌤️ Manual Test: Peak Heat Hours Reminder Triggered.</p>
+    </div>
+
 
     <div class="container">
         <div class="left-panel">
@@ -29,8 +39,7 @@
 
         <div class="right-panel">
             <header>
-                <h1>System Monitor</h1>
-                <p>Real-time Sensor Data</p>
+                <h1>Dashboard</h1>
             </header>
 
             <div class="data-cards">
@@ -47,7 +56,22 @@
                     <div class="value"><span id="hi-val">--</span> °C</div>
                 </div>
             </div>
+            
+            <!-- This card is for Decision Support System -->
+            <div class="card" id="dss-card">
+                <div class="dss-header">
+                    <h3 id="dss-title">Heat Index Advisory (Decision Support System): --</h3>
+                </div>
 
+                <div id="dss-content">
+                    <p>Waiting data...</p>
+                </div>
+
+                <!-- Credit CDRROMO -->
+                <p id="dss-source">Based on CDRRMO Heat Index Threshold Guidlines</p>
+            </div>
+
+            <!-- Sparkline Chart Container -->
             <div class="chart-container">
                 <canvas id="sensorChart"></canvas>
             </div>
