@@ -110,3 +110,80 @@ header h1 {
         height: 50vh;
     }
 }
+
+/* Desing for Decision Support System*/
+#dss-card {
+    background-color: var(--card-bg);
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px #010101(255, 255, 255, 0.3);
+    margin-top: -5px;
+    position: relative;
+}
+
+#dss-card h3 {
+    font-size: 1rem;
+    margin-bottom: 10px;
+    text-align: left; /* LEFT ALIGN */
+}
+
+#dss-content p {
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+}
+
+#dss-source {
+    font-size: 0.7rem;
+    color: #555;
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    text-align: right;
+}
+/* END */
+
+/* Alert Banner Styles */
+#alert-banner {
+    position: fixed;
+    top: -60px; /* Start hidden above screen */
+    left: 0;
+    width: 100%;
+    background-color: rgb(255, 80, 80);   /* Red Banner */
+    color: white;
+    padding: 15px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: top 0.6s ease-in-out; /* Slide animation */
+    z-index: 9999;
+}
+
+#alert-banner.show { top: 0; }
+#alert-banner.hidden { top: -60px; }
+
+/* ORANGE – peak-hours reminder */
+#peak-heat-banner {
+    position: fixed;
+    top: -60px;
+    left: 0;
+    width: 100%;
+    background-color: #ff8c00;           /* Orange Banner*/
+    color: white;
+    padding: 15px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: top 0.6s ease-in-out;
+    z-index: 10000;
+}
+
+#peak-heat-banner.show { top: 0; }
+#peak-heat-banner.hidden { top: -60px;}
+
+/* END */
+
+/* Try the sparkline css style */
+.chart-container {
+  height: 80px;   /* was 300 px */
+  padding: 5px 15px;
+}
