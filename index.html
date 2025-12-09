@@ -20,28 +20,49 @@
     </script>
 </head>
 <body>
-    <!-- Notification banner if Heat Index is greater than 45°C-->
+    <!-- Notification banner if Heat Index is greater than 41°C-->
      <div id="alert-banner" class="hidden">
-        <p id="alert-message">⚠️WARNING: Heat index is greater than 45°C⚠️</p>
+        <p id="alert-message"></p>
      </div>
      
      <!-- Peak Heat Hours Banner in different banner -->
     <div id="peak-heat-banner" class="hidden">
-        <p id="peak-heat-message">🌤️ Manual Test: Peak Heat Hours Reminder Triggered.</p>
+        <p id="peak-heat-message">🌤️ Peak Heat Hours Reminder</p>
     </div>
 
 
-    <div class="container">
-        <div class="left-panel">
-            <div id="canvas-container"></div>
-            <div id="loading-overlay">Loading Model...</div>
-        </div>
+ <!-- ======= GRID LAYOUT START ======= -->
+    <div class="layout-grid">
 
-        <div class="right-panel">
-            <header>
-                <h1>Dashboard</h1>
-            </header>
+        <!-- LEFT SIDEBAR -->
+        <aside class="sidebar-left">
+            <h2 class="sidebar-title">Dashboard</h2>
 
+            <nav class="nav-links">
+                <a href="#">Room 1</a>
+                <a href="#">Room 2</a>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-content">
+
+            <!-- Middle row: Digital Twin + Chart -->
+            <div class="threejs-chart-wrapper">
+
+            <!-- 3D Model Viewer -->
+                <div class="threejs-wrapper">
+                    <div id="canvas-container"></div>
+                    <div id="loading-overlay">Loading Model...</div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="sensorChart"></canvas>
+                </div>
+            </div>
+
+
+            <!-- SENSOR CARDS -->
             <div class="data-cards">
                 <div class="card">
                     <h3>Temperature</h3>
@@ -56,8 +77,8 @@
                     <div class="value"><span id="hi-val">--</span> °C</div>
                 </div>
             </div>
-            
-            <!-- This card is for Decision Support System -->
+
+            <!-- DSS Card -->
             <div class="card" id="dss-card">
                 <div class="dss-header">
                     <h3 id="dss-title">Heat Index Advisory (Decision Support System): --</h3>
@@ -67,16 +88,26 @@
                     <p>Waiting data...</p>
                 </div>
 
-                <!-- Credit CDRROMO -->
-                <p id="dss-source">Based on CDRRMO Heat Index Threshold Guidlines</p>
+                <p id="dss-source">Based on CDRRMO Heat Index Threshold Guidelines</p>
             </div>
 
-            <!-- Sparkline Chart Container -->
-            <div class="chart-container">
+            <!-- Sparkline Chart -->
+            <div>
                 <canvas id="sensorChart"></canvas>
             </div>
-        </div>
+
+        </main>
+
+        <!-- RIGHT SIDEBAR (AI CHAT) -->
+        <aside class="sidebar-right">
+            <div class="chat-header">AI Assistant</div>
+            <div class="chat-container">
+                <!-- Chat UI will be added here after CSS -->
+            </div>
+        </aside>
+
     </div>
+    <!-- ======= GRID LAYOUT END ======= -->
 
     <script type="module" src="main.js"></script>
 </body>
