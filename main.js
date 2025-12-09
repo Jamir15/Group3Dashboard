@@ -160,7 +160,7 @@ function showAlertBanner(message) {
 //Manual control for testing notification banner
 document.addEventListener("keydown", e => {
     if (e.shiftKey && e.key === "N") {                                    //Press "shift + N" to trigger alert banner
-        showAlertBanner("⚠️WARNING: Heat index is greater than 45°C⚠️"); //This will be used for demonstration purposes
+        showAlertBanner("⚠️WARNING: Heat index is greater than 41°C⚠️"); //This will be used for demonstration purposes
     }
 });
 
@@ -193,8 +193,8 @@ function checkPeakHeatHours() {
 //Shift + P
 //Manual control for testing peak heat hours banner
 document.addEventListener("keydown", e => {  
-    if (e.shiftKey && e.key === "P") {             // Press "SHIFT + P" to trigger peak heat hours banner
-        showPeakBanner("🌤️ Manual Test: Peak Heat Hours Reminder Triggered.");                          //This will be used for demonstration purposes
+    if (e.shiftKey && e.key === "P") {                       // Press "SHIFT + P" to trigger peak heat hours banner
+        showPeakBanner("🌤️ Peak Heat Hours Reminder");     //This will be used for demonstration purposes
     }
 });
 
@@ -203,10 +203,10 @@ document.addEventListener("keydown", e => {
 -------------------------------------------------------------- */
 // Function to display heat index label
 function getHeatIndexLabel(hi) {
-    if (hi >= 27 && hi <= 32) return "Caution";
-    if (hi >= 33 && hi <= 41) return "Extreme Caution";
-    if (hi >= 42 && hi <= 51) return "Danger";
-    if (hi >= 52) return "Extreme Danger";
+    if (hi >= 27 && hi <= 32) return "CAUTION";
+    if (hi >= 33 && hi <= 41) return "EXTREME CAUTION";
+    if (hi >= 42 && hi <= 51) return "DANGER";
+    if (hi >= 52) return "EXTREME DANGER";
     return "Normal";
 }
 
@@ -218,20 +218,31 @@ function updateDashboard(temp, humidity) {
     document.getElementById("hum-val").textContent = humidity.toFixed(1);
     document.getElementById("hi-val").textContent = hi.toFixed(1);
 
-    // Show alert banner if Heat Index exceeds 45°C
-    if (hi > 45) {
-        showAlertBanner("WARNING: Heat index is greater than 45°C");
+    // Show alert banner if Heat Index exceeds 41°C
+    if (hi > 41) {
+        showAlertBanner("⚠️WARNING: Heat index is greater than 41°C⚠️");
     }
 
-    //Display Heat Index Label
-    const label = getHeatIndexLabel(hi);
-    document.getElementById("dss-title").textContent = `Heat Index Advisory (Decision Support System): ${label}`;
+    // Display Heat Index Label with color and emphasis
+    const label = getHeatIndexLabel(hi); // Get label first
 
-    // Use Logic for Decision Support System
-    const advisory = getHeatIndexAdvisory(hi);
-    const dssBox = document.getElementById("dss-content");
+    // Determine color per threshold
+    let color = "black"; // default
+    switch (label) {
+        case "CAUTION": color = "green"; break;
+        case "EXTREME CAUTION": color = "yellow"; break;
+        case "DANGER": color = "orange"; break;
+        case "EXTREME DANGER": color = "red"; break;
+}
 
-    dssBox.innerHTML = advisory.map(item => `<p>• ${item}</p>`).join("");
+// Update DSS title with styled label
+document.getElementById("dss-title").innerHTML = 
+    `Heat Index Advisory (Decision Support System): <span style="color:${color}; font-size:1.5em; font-weight:bold;">${label}</span>`;
+
+// Use Logic for Decision Support System
+const advisory = getHeatIndexAdvisory(hi);
+const dssBox = document.getElementById("dss-content");
+dssBox.innerHTML = advisory.map(item => `<p>• ${item}</p>`).join("");
 }
 
 /* --------------------------------------------------------------
@@ -244,59 +255,44 @@ let chartData = {
     hum: [],
     hi: []
 };
-// Initialize the sparkline chart
+// Initialize the bar-chart
 function initSparkline() {
     const ctx = document.getElementById('sensorChart').getContext('2d');
 
     sensorChart = new Chart(ctx, {
-        type: 'line',
+        type: 'bar',
         data: {
             labels: chartData.labels,
             datasets: [
                 {
                     label: 'Temperature (°C)',
                     data: chartData.temp,
-                    borderColor: 'red',
-                    backgroundColor: 'rgba(255,0,0,0.1)',
-                    fill: true,
-                    tension: 0.3,
-                    pointRadius: 0
+                    backgroundColor: 'rgba(255, 0, 0, 0.8)',
+                    borderWidth: 0
                 },
                 {
                     label: 'Humidity (hPa)',
                     data: chartData.hum,
-                    borderColor: 'blue',
-                    backgroundColor: 'rgba(0,0,255,0.1)',
-                    fill: true,
-                    tension: 0.3,
-                    pointRadius: 0
+                    backgroundColor: 'rgba(0, 0, 255, 0.8)',
+                    borderWidth: 0
                 },
                 {
                     label: 'Heat Index (°C)',
                     data: chartData.hi,
-                    borderColor: 'orange',
-                    backgroundColor: 'rgba(255,165,0,0.1)',
-                    fill: true,
-                    tension: 0.3,
-                    pointRadius: 0
+                    backgroundColor: 'rgba(255, 165, 0, 0.8)',
+                    borderWidth: 0
                 }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: true, position: 'top' } },
+            plugins: { 
+                legend: { display: true, position: 'top' } 
+            },
             scales: {
-                x: { display: false },
-                y: { 
-                    beginAtZero: true,
-                    //----------------------------------------------------------------------------------------
-                    //Commented this out for now, becuase the values are too static, spikes cannot be seen yet
-                    //----------------------------------------------------------------------------------------
-                    // min: 29,              // lower bound just below your usual low
-                    // max: 36,              // upper bound just above your usual high
-                    // ticks: { maxTicksLimit: 3 } // keeps the tiny graph clean
-                }
+                x: { stacked: false },
+                y: { beginAtZero: true }
             }
         }
     });
@@ -369,7 +365,7 @@ window.onload = () => {
     checkPeakHeatHours();
 
     //Check every minute if it is still Peak Heat Hours
-    setInterval(checkPeakHeatHours, 60000); // 60000 ms = 1 minute
+    // setInterval(checkPeakHeatHours, 60000); // 60000 ms = 1 minute
 
     //Initialize Three.js viewer
     initThreeJS();
