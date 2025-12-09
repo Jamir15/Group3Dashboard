@@ -65,7 +65,7 @@ function initThreeJS() {
 
     const loader = new GLTFLoader();
     loader.load(
-        './classroom.glb',
+        './classroom_reducedSize.glb',
         gltf => {
             document.getElementById('loading-overlay').style.display = 'none';
             const model = gltf.scene;
