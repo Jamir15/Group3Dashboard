@@ -73,6 +73,15 @@ body {
     background-color: rgba(255, 255, 255, 0.2);
 }
 
+/* ----------------------------------------------- */
+/* CLICK VISUAL FOR LEFT SIDE PANEL */
+/* ---------------------------------------------- */
+.sidebar-left .nav-links a.active {
+    background-color: #ddd;
+    font-weight: bold;
+}
+
+
 /* -------------------------------------------------
    MAIN CONTENT
 -------------------------------------------------- */
