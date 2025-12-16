@@ -34,6 +34,37 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 /* --------------------------------------------------------------
+ * ROOM SELECTION LOGIC (UI ONLY – PHASE 1)
+ * -------------------------------------------------------------- */
+
+let activeRoom = "room1"; // default room
+
+function setupRoomClickHandlers() {
+    const roomLinks = document.querySelectorAll(".room-link");
+
+    roomLinks.forEach(link => {
+        link.addEventListener("click", e => {
+            e.preventDefault();
+
+            // Remove active state from all
+            roomLinks.forEach(l => l.classList.remove("active"));
+
+            // Set active state on clicked link
+            link.classList.add("active");
+
+            // Update active room
+            activeRoom = link.dataset.room;
+
+            console.log("Active room changed to:", activeRoom);
+
+            // TEMP feedback (for now)
+            document.getElementById("dss-content").innerHTML =
+                `<p>Currently viewing data for <b>${activeRoom.toUpperCase()}</b></p>`;
+        });
+    });
+}
+
+/* --------------------------------------------------------------
  * 2. Three.js viewer
  * -------------------------------------------------------------- */
 function initThreeJS() {
@@ -65,7 +96,7 @@ function initThreeJS() {
 
     const loader = new GLTFLoader();
     loader.load(
-        './classroom_reducedSize.glb',
+        './classroom_reduceSize.glb',
         gltf => {
             document.getElementById('loading-overlay').style.display = 'none';
             const model = gltf.scene;
@@ -246,7 +277,7 @@ dssBox.innerHTML = advisory.map(item => `<p>• ${item}</p>`).join("");
 }
 
 /* --------------------------------------------------------------
- * 7. Sparkline Charts Setup
+ * 7. Bar line Charts Setup
  * -------------------------------------------------------------- */
 let sensorChart = null;
 let chartData = {
@@ -298,7 +329,7 @@ function initSparkline() {
     });
 }
 
-// Update sparkline with new data
+// Update bar line with new data
 function updateSparkline(temp, hum, hi) {
     const ts = new Date().toLocaleTimeString();
 
@@ -363,6 +394,9 @@ window.onload = () => {
 
     //Check for Peak Heat Hours on load
     checkPeakHeatHours();
+
+    //Setup Room Click Handlers
+    setupRoomClickHandlers();
 
     //Check every minute if it is still Peak Heat Hours
     // setInterval(checkPeakHeatHours, 60000); // 60000 ms = 1 minute
